@@ -78,8 +78,8 @@ class NetworkConfig:
                             base64.b64encode(weights[weights_from_index: weights_to_index])
                         
                         if self.print_weights:
-                            print 'Bias of %d part %d-->' %(layer_num, l), self.configurations[layer_num]['bias']['bias_%d' %l]
-                            print 'Weights of %d part %d-->' %(layer_num, l), \
+                            print 'Bias of %d part %d\t-->\t' %(layer_num, l), self.configurations[layer_num]['bias']['bias_%d' %l]
+                            print 'Weights of %d part %d\t-->\t' %(layer_num, l), \
                                 self.configurations[layer_num]['weights']['weights_%d' %l]
                                 
                     total_bytes += bias_num + weights_num
@@ -92,5 +92,5 @@ class NetworkConfig:
         assert total_bytes == file_size
 
 if __name__ == '__main__':
-    cfg = NetworkConfig(save_all_weights=False)
-    print json.dumps(cfg.configurations)
+    cfg = NetworkConfig(save_all_weights=False, print_weights=True)
+#     print json.dumps(cfg.configurations)
