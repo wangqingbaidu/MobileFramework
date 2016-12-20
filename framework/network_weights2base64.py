@@ -78,7 +78,8 @@ class NetworkConfig:
                             base64.b64encode(weights[weights_from_index: weights_to_index])
                         
                         if self.print_weights:
-                            print 'Bias of %d part %d\t-->\t' %(layer_num, l), self.configurations[layer_num]['bias']['bias_%d' %l]
+                            print 'Bias of layer %d part %d\t-->\t' %(layer_num, l), \
+                                self.configurations[layer_num]['bias']['bias_%d' %l]
                             print 'Weights of %d part %d\t-->\t' %(layer_num, l), \
                                 self.configurations[layer_num]['weights']['weights_%d' %l]
                                 
