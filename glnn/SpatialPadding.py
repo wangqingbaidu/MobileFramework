@@ -18,11 +18,15 @@ class SpatialPadding(BaseLayer):
     
     @property
     def vertexShader(self):
-        pass
+        if not self.__vertexShader:
+            self.__parserVertexShader()
+        return self.__vertexShader
     
     @property
     def fragmentShader(self):
-        pass
+        if not self.__fragmentShader:
+            self.__parserFragmentShader()
+        return self.__fragmentShader
     
     def toJson(self):
         pass
