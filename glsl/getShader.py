@@ -8,7 +8,6 @@ From Institute of Computing Technology
 ©2015-2016 All Rights Reserved.
 '''
 import os
-from scipy.interpolate.interpolate_wrapper import block
 
 GLSL_PATH = '../glsl/'
 
@@ -19,15 +18,17 @@ def getVertexShader(layer = None):
 def getFragmentShader(layer = None):
     assert layer
     if 'SpatialConvolution' in str(layer.__class__):
-        return getConvolutionalFragmentShader(layer)
+        return getSpatialConvolutionalFragmentShader(layer)
     elif 'Activation' in str(layer.__class__):
         return getActivationFragmentShader(layer)
-
-def getConvolutionalFragmentShader(layer = None):
+    elif 'SpatialAveragePooling' in str(layer.__class__):
+        return getSpatialAveragePoolingFragmentShader(layer)
+    
+def getSpatialConvolutionalFragmentShader(layer = None):
     assert layer
     loop_biases_template = open(os.path.join(GLSL_PATH, 'loop_biases.glsl')).read()
     loop_weights_template = open(os.path.join(GLSL_PATH, 'loop_weights.glsl')).read()
-    fragment_template = open(os.path.join(GLSL_PATH, 'fragmentConv.glsl')).read()
+    fragment_template = open(os.path.join(GLSL_PATH, 'fragmentSpatialConvolution.glsl')).read()
     
     param = 'out'
     idx = 'weights_idx'
@@ -52,13 +53,7 @@ def getConvolutionalFragmentShader(layer = None):
                                                          fThisX = fThis[i][0], fThisY = fThis[i][1])
             align += 1
             
-    if_conditions = """
-    if (weights_idx * 4 >= biases_num)
-    {
-        gl_FragColor = vec4(0,0,0,0);
-        return;
-    }
-    """
+    if_conditions = open('if_conditions.glsl').read()
             
     return fragment_template.format(biases_num=layer.nOutputPlane,
                                     weights_num=layer.nOutputPlane*layer.kH*layer.kW,
@@ -79,6 +74,10 @@ def getActivationFragmentShader(layer = None):
         leaky_slope = 0.1
     
     return open(os.path.join(GLSL_PATH, 'fragmentActivation.glsl')).read().format(leaky_slope=leaky_slope)
+
+def getSpatialAveragePoolingFragmentShader(layer = None):
+    assert layer
+    
 
 if __name__ == '__main__':
     print getVertexShader()

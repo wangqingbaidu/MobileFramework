@@ -1,3 +1,3 @@
 # MobileFramework
 
-//Todo: Something to be done.
+Todo: Something to be done.

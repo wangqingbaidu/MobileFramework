@@ -14,7 +14,7 @@ class Activation(BaseLayer):
     __fragmentShader = None
     
     def __init__(self,
-                 activation = 'relu'):
+                 activation):
         assert activation.lower() in ['relu', 'leaky']
         self.activation = activation.lower()
         
