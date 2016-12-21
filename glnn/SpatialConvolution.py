@@ -83,6 +83,7 @@ class SpatialConvolution(BaseLayer):
             self.outputHeight = (self.inputHeight + 2 * self.padH - self.kH) / self.dH + 1
     
     def toJson(self):
+        #todo dumps all objects
         pass
     
 if __name__ == '__main__':
