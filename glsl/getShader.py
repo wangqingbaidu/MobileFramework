@@ -23,6 +23,8 @@ def getFragmentShader(layer = None):
         return getActivationFragmentShader(layer)
     elif 'SpatialAveragePooling' in str(layer.__class__):
         return getSpatialAveragePoolingFragmentShader(layer)
+    elif 'SpatialPadding' in str(layer.__class__):
+        return getSpatialPaddingFragmentShader(layer)
     
 def getSpatialConvolutionalFragmentShader(layer = None):
     assert layer
@@ -53,7 +55,7 @@ def getSpatialConvolutionalFragmentShader(layer = None):
                                                          fThisX = fThis[i][0], fThisY = fThis[i][1])
             align += 1
             
-    if_conditions = open('if_conditions.glsl').read()
+    if_conditions = open(os.path.join(GLSL_PATH, 'if_conditions.glsl')).read()
             
     return fragment_template.format(biases_num=layer.nOutputPlane,
                                     weights_num=layer.nOutputPlane*layer.kH*layer.kW,
@@ -77,7 +79,10 @@ def getActivationFragmentShader(layer = None):
 
 def getSpatialAveragePoolingFragmentShader(layer = None):
     assert layer
-    
+
+def getSpatialPaddingFragmentShader(layer=None):
+    assert layer
+    return open(os.path.join(GLSL_PATH, 'fragmentSpatialPadding.glsl')).read()    
 
 if __name__ == '__main__':
     print getVertexShader()

@@ -12,6 +12,7 @@ from glsl import getShader
 from glnn.BaseLayer import BaseLayer
 import math
 from glnn.Activation import Activation
+from glnn.SpatialPadding import SpatialPadding
 
 class SpatialConvolution(BaseLayer):
     __vertexShader = None
@@ -34,6 +35,7 @@ class SpatialConvolution(BaseLayer):
         self.padW = padW if padW != None else (kW - 1) / 2
         self.padH = padH if padH != None else (kH - 1) / 2
         self.activation = Activation(activation)
+        self.padding = SpatialPadding(padW, padH)
         
         self.weights = None
         self.bias = None
@@ -59,9 +61,10 @@ class SpatialConvolution(BaseLayer):
         return self.__fragmentShader
     
     def resize(self, iw, ih, ic):
-        self.inputWidth = iw
-        self.inputHeight = ih
-        self.nInputPlane = ic
+        self.padding.resize(iw, ih, ic)
+        self.inputWidth = self.padding.outputWidth
+        self.inputHeight = self.padding.outputHeight
+        self.nInputPlane = self.padding.nOutputPlane
         self.__computeOutputSize()
         
         self.activation.resize(self.outputWidth, self.outputHeight, self.nOutputPlane)
