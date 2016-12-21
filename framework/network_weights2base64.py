@@ -66,12 +66,14 @@ class NetworkConfig:
                     
                     self.configurations[layer_num]['bias'] = {}
                     self.configurations[layer_num]['weights'] = {}
+                    
+                    divide_part = former_channels / 4
                     #loop vec4
-                    for l in range(4):
-                        bias_from_index = bias_num / 4 * l
-                        bias_to_index = bias_num / 4 * (l + 1)
-                        weights_from_index = weights_num / 4 * l
-                        weights_to_index = weights_num / 4 * (l + 1)
+                    for l in range(divide_part):
+                        bias_from_index = bias_num / divide_part * l
+                        bias_to_index = bias_num / divide_part * (l + 1)
+                        weights_from_index = weights_num / divide_part * l
+                        weights_to_index = weights_num / divide_part * (l + 1)
                         self.configurations[layer_num]['bias']['bias_%d' %l] = \
                             base64.b64encode(bias[bias_from_index: bias_to_index])
                         self.configurations[layer_num]['weights']['weights_%d' %l] = \
@@ -86,12 +88,13 @@ class NetworkConfig:
                     total_bytes += bias_num + weights_num
                 
                 layer_num += 1
-        except:
-            print 'Error while converting weights, check layer %d\n %s!' %(layer_num, self.configurations[layer_num])
+        except Exception, e:
+            print e
+            print 'Error while converting weights, check layer %d\n%s!' %(layer_num, self.configurations[layer_num])
             exit()
         
         assert total_bytes == file_size
 
 if __name__ == '__main__':
-    cfg = NetworkConfig(save_all_weights=False, print_weights=True)
-#     print json.dumps(cfg.configurations)
+    cfg = NetworkConfig(save_all_weights=False, print_weights=False)
+    print json.dumps(cfg.configurations)

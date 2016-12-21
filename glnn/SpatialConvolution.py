@@ -11,24 +11,30 @@ From Institute of Computing Technology
 from glsl import getShader
 from glnn.BaseLayer import BaseLayer
 import math
+from glnn.Activation import Activation
 
 class SpatialConvolution(BaseLayer):
+    __vertexShader = None
+    __fragmentShader = None
+    
     def __init__(self,
-                 nInputPlane,
                  nOutputPlane,
                  kW,
                  kH,
                  dW = 1,
                  dH = 1,
                  padW = None,
-                 padH = None):
-        BaseLayer.__init__(self, nInputPlane, nOutputPlane)
+                 padH = None,
+                 activation = None):
+        BaseLayer.__init__(self, nOutputPlane)
         self.kW = kW
         self.kH = kH
         self.dW = dW
         self.dH = dH
         self.padW = padW if padW != None else (kW - 1) / 2
         self.padH = padH if padH != None else (kH - 1) / 2
+        self.activation = Activation(activation)
+        
         self.weights = None
         self.bias = None
         group = nOutputPlane / 4 + (1 if nOutputPlane % 4 else 0)
@@ -40,31 +46,33 @@ class SpatialConvolution(BaseLayer):
         else:
             self.blockY = group / self.blockX + 1
             self.if_condition = True
-        
-    def getVertexShader(self):
-        if not self.vertexShader: 
+    @property
+    def vertexShader(self):
+        if not self.__vertexShader: 
             self.__parserVertexShader()
-        return self.vertexShader
-        
-    def getFragmentShader(self):
-        if not self.fragmentShader:
-            self.__parserFragmentShader()
-        return self.fragmentShader
+        return self.__vertexShader
     
-    def resizeNetwork(self, layer = None):
-        assert layer
-        self.inputWidth = layer.outputWidth
-        self.inputHeight = layer.outputHeight
+    @property
+    def fragmentShader(self):
+        if not self.__fragmentShader:
+            self.__parserFragmentShader()
+        return self.__fragmentShader
+    
+    def resize(self, iw, ih, ic):
+        self.inputWidth = iw
+        self.inputHeight = ih
+        self.nInputPlane = ic
         self.__computeOutputSize()
         
+        self.activation.resize(self.outputWidth, self.outputHeight, self.nOutputPlane)
         self.__parserVertexShader()
         self.__parserFragmentShader()
         
     def __parserVertexShader(self):
-        self.vertexShader = getShader.getVertexShader(self)
+        self.__vertexShader = getShader.getVertexShader(self)
     
     def __parserFragmentShader(self):
-        self.fragmentShader = getShader.getFragmentShader(self)
+        self.__fragmentShader = getShader.getFragmentShader(self)
         
     def __computeOutputSize(self):
         if self.inputWidth and self.inputHeight:
@@ -75,8 +83,8 @@ class SpatialConvolution(BaseLayer):
         pass
     
 if __name__ == '__main__':
-    conv = SpatialConvolution(3,44,3,3,2,2)
+    conv = SpatialConvolution(43,3,3,2,2, activation='leaky')
     conv.inputWidth = 224
     conv.inputHeight = 224
-    print conv.padH
+    print conv.fragmentShader
         

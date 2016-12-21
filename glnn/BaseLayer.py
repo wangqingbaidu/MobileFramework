@@ -13,25 +13,26 @@ class BaseLayer:
     outputWidth = None
     outputHeight = None
     
-    vertexShader = None
-    fragmentShader = None
+    nInputPlane = -1
     
-    def __init__(self,
-                 nInputPlane,
-                 nOutputPlane):
-        self.nInputPlane = nInputPlane
+    def __init__(self, nOutputPlane):
         self.nOutputPlane = nOutputPlane
     
-    def getVertexShader(self):        
-        print 'Please complete this function: getVertexShader'
+    @property
+    def vertexShader(self):        
+        print 'Please complete the function of getting vertexShader.'
         assert None
-        
-    def getFragmentShader(self):                
-        print 'Please complete this function: getFragmentShader'
+    
+    @property
+    def fragmentShader(self):                
+        print 'Please complete the function of getting fragmentShader.'
         assert None
     
     def toJson(self):
         print 'Please complete this function: toJson'
         assert None
-        
+    
+    def resize(self, iw, ih, ic):
+        print 'Please complete this function: resize'
+        assert None
         

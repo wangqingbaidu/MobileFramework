@@ -14,22 +14,20 @@ GLSL_PATH = '../glsl/'
 
 def getVertexShader(layer = None):
     assert layer
-    if 'SpatialConvolution' in str(layer.__class__):
-        return getConvolutionalVertexShader()
+    return open(os.path.join(GLSL_PATH, 'vertexShader.glsl')).read()
 
 def getFragmentShader(layer = None):
     assert layer
     if 'SpatialConvolution' in str(layer.__class__):
         return getConvolutionalFragmentShader(layer)
-
-def getConvolutionalVertexShader():
-    return open(os.path.join(GLSL_PATH, 'vertexConv.glsl')).read()
+    elif 'Activation' in str(layer.__class__):
+        return getActivationFragmentShader(layer)
 
 def getConvolutionalFragmentShader(layer = None):
     assert layer
     loop_biases_template = open(os.path.join(GLSL_PATH, 'loop_biases.glsl')).read()
     loop_weights_template = open(os.path.join(GLSL_PATH, 'loop_weights.glsl')).read()
-    fragment_template = open(os.path.join(GLSL_PATH, 'fragmentShader.glsl')).read()
+    fragment_template = open(os.path.join(GLSL_PATH, 'fragmentConv.glsl')).read()
     
     param = 'out'
     idx = 'weights_idx'
@@ -74,5 +72,13 @@ def getConvolutionalFragmentShader(layer = None):
                                     dW=layer.dW,
                                     dH=layer.dH)
 
+def getActivationFragmentShader(layer = None):
+    assert layer
+    leaky_slope = 0
+    if layer.activation == 'leaky':
+        leaky_slope = 0.1
+    
+    return open(os.path.join(GLSL_PATH, 'fragmentActivation.glsl')).read().format(leaky_slope=leaky_slope)
+
 if __name__ == '__main__':
-    print getConvolutionalVertexShader()
+    print getVertexShader()
