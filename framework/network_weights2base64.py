@@ -8,12 +8,13 @@ From Institute of Computing Technology
 ©2015-2016 All Rights Reserved.
 '''
 SIZEOFFLOAT = 4
+CONFIG_PATH = '../config'
 import ConfigParser, base64, os, json
 
 class NetworkConfig:
     def __init__(self, 
-                 cfgfile='kwai_fconv_s2_sig.cfg',
-                 weights='kwai_fconv_s2_sig.weights',
+                 cfgfile=os.path.join(CONFIG_PATH,'kwai_fconv_s2_sig.cfg'),
+                 weights=os.path.join(CONFIG_PATH,'kwai_fconv_s2_sig.weights'),
                  has_weights = ['convolutional', 'connected'],
                  save_all_weights = False,
                  print_weights = False):
