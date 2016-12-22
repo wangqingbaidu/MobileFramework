@@ -8,7 +8,9 @@ From Institute of Computing Technology
 ©2015-2016 All Rights Reserved.
 '''
 from glnn.BaseLayer import BaseLayer
-from glsl import getShader
+from utils import getShader
+import json
+from utils.obj2dict import obj2dict
 class Activation(BaseLayer):
     __vertexShader = None
     __fragmentShader = None
@@ -43,12 +45,12 @@ class Activation(BaseLayer):
     
     def __parserFragmentShader(self):
         self.__fragmentShader = getShader.getFragmentShader(self)
-        
-    
-    def toJson(self):
-        pass
+            
+    def toDict(self):
+        return obj2dict(self)
         
         
 if __name__ == '__main__':
-    a = Activation()
+    a = Activation('leaky')
+    print a.toJson()
     print a.fragmentShader

@@ -8,7 +8,9 @@ From Institute of Computing Technology
 ©2015-2016 All Rights Reserved.
 '''
 from glnn.BaseLayer import BaseLayer
-from glsl import getShader
+from utils import getShader
+import json
+from utils.obj2dict import obj2dict
 class SpatialPadding(BaseLayer):
     __vertexShader = None
     __fragmentShader = None
@@ -29,8 +31,8 @@ class SpatialPadding(BaseLayer):
             self.__parserFragmentShader()
         return self.__fragmentShader
     
-    def toJson(self):
-        pass
+    def toDict(self):
+        return obj2dict(self)
     
     def resize(self, iw, ih, ic):        
         self.inputWidth = iw
@@ -51,4 +53,5 @@ class SpatialPadding(BaseLayer):
 if __name__ == '__main__':
     padding = SpatialPadding(1,1)
     padding.resize(4, 4, 4)
+    print dir(padding)
     print padding.fragmentShader

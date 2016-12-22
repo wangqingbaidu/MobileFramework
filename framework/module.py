@@ -9,6 +9,7 @@ From Institute of Computing Technology
 '''
 from glnn.SpatialConvolution import SpatialConvolution
 from glnn.BaseLayer import BaseLayer
+import json
 
 class Module:
     inputWidth = None
@@ -51,7 +52,7 @@ class Module:
         
         
     def toJson(self):
-        pass
+        return json.dumps([l.toDict() for l in self.container])
     
     def __init_from_config(self, config = None):
         assert config
@@ -62,4 +63,4 @@ if __name__ == '__main__':
     model.add(SpatialConvolution(3,3,3, activation='relu'))
     model.add(SpatialConvolution(44,3,3, activation='leaky'))
     model.resizeNetwork()
-    print model.container[1].activation.fragmentShader
+    print model.toJson()

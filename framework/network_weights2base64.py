@@ -67,7 +67,7 @@ class NetworkConfig:
                     self.configurations[layer_num]['bias'] = {}
                     self.configurations[layer_num]['weights'] = {}
                     
-                    divide_part = former_channels / 4
+                    divide_part = former_channels / 4 + (1 if former_channels % 4 else 0)
                     #loop vec4
                     for l in range(divide_part):
                         bias_from_index = bias_num / divide_part * l

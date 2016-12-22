@@ -8,11 +8,12 @@ From Institute of Computing Technology
 ©2015-2016 All Rights Reserved.
 '''
 
-from glsl import getShader
+from utils import getShader
 from glnn.BaseLayer import BaseLayer
-import math
+import math, json
 from glnn.Activation import Activation
 from glnn.SpatialPadding import SpatialPadding
+from utils.obj2dict import obj2dict
 
 class SpatialConvolution(BaseLayer):
     __vertexShader = None
@@ -35,7 +36,7 @@ class SpatialConvolution(BaseLayer):
         self.padW = padW if padW != None else (kW - 1) / 2
         self.padH = padH if padH != None else (kH - 1) / 2
         self.activation = Activation(activation)
-        self.padding = SpatialPadding(padW, padH)
+        self.padding = SpatialPadding(self.padW, self.padH)
         
         self.weights = None
         self.bias = None
@@ -82,13 +83,17 @@ class SpatialConvolution(BaseLayer):
             self.outputWidth = (self.inputWidth + 2 * self.padW - self.kW) / self.dW + 1
             self.outputHeight = (self.inputHeight + 2 * self.padH - self.kH) / self.dH + 1
     
-    def toJson(self):
-        #todo dumps all objects json string
-        pass
+    def toDict(self):
+        attrib = obj2dict(self, ['activation', 'padding'])
+        attrib['activation'] = self.activation.toDict()
+        attrib['padding'] = self.padding.toDict()
+        return attrib
     
 if __name__ == '__main__':
     conv = SpatialConvolution(43,3,3,2,2, activation='leaky')
     conv.inputWidth = 224
     conv.inputHeight = 224
-    print conv.fragmentShader
+    
+    print json.dumps(conv.toDict())
+#     print conv.fragmentShader
         

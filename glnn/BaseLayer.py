@@ -28,7 +28,7 @@ class BaseLayer:
         print 'Please complete the function of getting fragmentShader.'
         assert None
     
-    def toJson(self):
+    def toDict(self):
         print 'Please complete this function: toJson'
         assert None
     
