@@ -10,6 +10,7 @@ From Institute of Computing Technology
 from glnn.SpatialConvolution import SpatialConvolution
 from glnn.BaseLayer import BaseLayer
 import json
+from distutils.command.config import config
 
 class Module:
     inputWidth = None
@@ -30,8 +31,7 @@ class Module:
         try:
             self.inputWidth = int(w)
             self.inputHeight = int(h)
-            self.inputChannels = int(c)
-            
+            self.inputChannels = int(c) 
         except:
             print 'Error settings of width or height or channels', w, h, c
         
@@ -55,8 +55,25 @@ class Module:
         return json.dumps([l.toDict() for l in self.container])
     
     def __init_from_config(self, config = None):
-        assert config
-        pass
+        assert type(config) == dict
+        ################PHASE ONE. Get network configurations.################
+        try:
+            assert config[0]['type'] == 'net'
+            self.w = config[0]['width']
+            self.h = config[0]['height']
+            self.c = config[0]['channels']
+        except Exception,e:
+            print e, 'Check network configurations.'
+            exit()
+        
+        ################PHASE TWO. Get layers configurations.################
+        l = 1
+        try:
+            while l < len(config.keys()):
+                pass
+        except:
+            pass
+        
     
 if __name__ == '__main__':
     model = Module(224,224,3)

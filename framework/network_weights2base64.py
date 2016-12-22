@@ -28,7 +28,7 @@ class NetworkConfig:
         self.print_weights = print_weights
         self.configurations = {}
         self.__parser_network()
-        self.__attach_bias_weights()
+        self.__attach_biases_weights()
         
     def __parser_network(self):
         cf = ConfigParser.ConfigParser()
@@ -42,7 +42,7 @@ class NetworkConfig:
                 except:
                     self.configurations[int(sec)][k] = v
                 
-    def __attach_bias_weights(self):
+    def __attach_biases_weights(self):
         file_size = os.path.getsize(self.weights)
         f = open(self.weights)
         head = f.read(4 * SIZEOFFLOAT)
