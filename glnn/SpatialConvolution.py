@@ -27,7 +27,9 @@ class SpatialConvolution(BaseLayer):
                  dH = 1,
                  padW = None,
                  padH = None,
-                 activation = None):
+                 activation = None,
+                 bias = None,
+                 weights = None):
         BaseLayer.__init__(self, nOutputPlane)
         self.kW = kW
         self.kH = kH
@@ -38,8 +40,8 @@ class SpatialConvolution(BaseLayer):
         self.activation = Activation(activation)
         self.padding = SpatialPadding(self.padW, self.padH)
         
-        self.weights = None
-        self.bias = None
+        self.weights = weights
+        self.bias = bias
         group = nOutputPlane / 4 + (1 if nOutputPlane % 4 else 0)
         
         self.blockX = int(math.sqrt(group))
