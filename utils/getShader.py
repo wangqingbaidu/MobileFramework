@@ -10,7 +10,19 @@ From Institute of Computing Technology
 import os
 
 GLSL_PATH = '../glsl/'
+"""
+This module is used to get shader by the given type of layer.
 
+Methods
+-------
+@getVertexShader: All layer use the same vertex shader.
+    See in GLSL_PATH/vertexShader.glsl
+
+@getFragmentShader: Get fragment shader by the given layer.
+    The layer type can be SpatialConvolutional or Activation or SpatialPadding.
+    
+@getXXXFragmentShader: Get XXX fragment shader.
+"""
 def getVertexShader(layer = None):
     assert layer
     return open(os.path.join(GLSL_PATH, 'vertexShader.glsl')).read()

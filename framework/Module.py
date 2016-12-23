@@ -18,6 +18,36 @@ from utils.getFrameworkAttribute import getFrameworkAttribute
 import ConfigParser, base64, os, json
 
 class NetworkConfig:
+    """
+    This class is used to convert config file and weights to class.
+    Only darknet framework is supported now. You can refer to darknet's homepage or github for details.
+        http://pjreddie.com/darknet/
+        https://github.com/pjreddie/darknet
+        
+    Parameters
+    ---------------
+    @cfgfile: darknet-like config file which can be parsered by ConfigParser module.
+    @weights: weights file which contains bias and weights corresponds to cfgfile.
+    @has_weights: define which type of layer contains weights, It's recommended to leave it be.
+    @save_all_weights: default False. By default, it does't save entire weights to weights_all and bias_all attribute.
+                       If set to be True, weights_all and bias_all attribute will contains all weights
+    @print_weights: default False. Whether print log to console.
+    
+    Private Methods
+    ---------------
+    @__parser_network: just use ConfigParser module to convert cfgfile.
+        params: None
+        return type: dict
+    @__attach_bias_weights: attach bias and weights to bias and weights attribute.
+        params: None
+        return type: None
+        ###################################
+        This method will check size of weights file and compute the parameters which cfgfile must has. 
+        It will raise an error if the two are not equal.
+        Bias and weights will split to several parts, which will provide to multi-stage of OpenGL ES.
+        The weights file must in size nInputPlane * nOutputPlane * kW * kH and bias is in the front.
+        ****************The origin darknet weights perhaps not in this order.****************
+    """
     def __init__(self, 
                  cfgfile=os.path.join(CONFIG_PATH,'kwai_fconv_s2_sig.cfg'),
                  weights=os.path.join(CONFIG_PATH,'kwai_fconv_s2_sig.weights'),
@@ -103,6 +133,47 @@ class NetworkConfig:
         assert total_bytes == file_size
 
 class Module:
+    """
+    This class is act like Module in torch, the `container` attribute is set to contain all layer in the model.
+        
+    Parameters
+    ---------------
+    @w: image width.
+    @h: image height.
+    @c: image channel, default 3, must be 1 or 3.
+    @config: NetworkConfig instance. 
+             If this parameter is set, @w, @h, @c will be ignored, and will call resizeNetwork automaticly.
+    
+    Private Methods
+    ---------------
+    @__init_from_config: use a NetworkConfig instance to init Module.
+        params: NetworkConfig instance
+        return: None
+        ###################################
+        Initial from config contains two phase.
+        In phase one. Network input_width and input_height, and input_channels will be set.
+        In phase two. Use getFrameworkAttribute to get attribute name by the given framework.
+                      Then init layer by layer. 
+                      Now only SpatialConvolutional with padding and stride supported.
+    
+    Public Methods
+    --------------    
+    @setWidthHeight: Set attributes of network
+        params: w, h, c which is width, height, channels of input image.
+        reutrn: None
+        
+    @add: Add layers which based on BaseLayer otherwise will not be parsered.
+        params: Layer instance
+        return: None.
+        
+    @resizeNetwork: Compute the following layers width and height
+        params: None 
+        return: None
+        
+    @toJson: Convert Module to json object.
+        params: None 
+        return: None    
+    """
     inputWidth = None
     inputHeight = None
     def __init__(self, 
@@ -150,7 +221,7 @@ class Module:
                 l += 1
         except Exception,e:
             print e
-            pass
+            exit()
         
         self.resizeNetwork()
                 

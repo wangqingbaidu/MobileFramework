@@ -9,7 +9,7 @@ From Institute of Computing Technology
 '''
 def obj2dict(obj, ept = []):
     """
-    summary: Convert object to dict
+    summary: Convert object to dict except callable method and private attributes.
     """
     memberlist = [m for m in dir(obj)]
     _dict = {}

@@ -9,7 +9,6 @@ From Institute of Computing Technology
 '''
 from glnn.BaseLayer import BaseLayer
 from utils import getShader
-import json
 from utils.obj2dict import obj2dict
 class Activation(BaseLayer):
     __vertexShader = None
