@@ -172,7 +172,7 @@ class Module:
         
     @toJson: Convert Module to json object.
         params: None 
-        return: None    
+        return: Json string of model in glsl. 
     """
     inputWidth = None
     inputHeight = None

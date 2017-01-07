@@ -16,6 +16,48 @@ from glnn.SpatialPadding import SpatialPadding
 from utils.obj2dict import obj2dict
 
 class SpatialConvolution(BaseLayer):
+    """
+    Typically each Spatialconvolution layer contains padding, convolution, activation.
+    This class firstly use padding parameters to padding X pixels, then do feature extraction and finally activate the output feature map.
+    SpatialConvolution layer follow torch7 parameter settings which applies a 2D convolution over an input image composed of several input planes. 
+    The input tensor in forward(input) is expected to be a 3D tensor (nInputPlane x height x width).
+
+    Parameters
+    ---------------
+    @nOutputPlane: The number of output planes the convolution layer will produce.
+    @kW: The kernel width of the convolution
+    @kH: The kernel height of the convolution
+    @dW: The step of the convolution in the width dimension. Default is 1.
+    @dH: The step of the convolution in the height dimension. Default is 1.
+    @padW: Additional zeros added to the input plane data on both sides of width axis. Default is 0. (kW-1)/2 is often used here.
+    @padH: Additional zeros added to the input plane data on both sides of height axis. Default is 0. (kH-1)/2 is often used here.
+    @weights: Weights matrix which is based on base64 for visible.
+    @bias: Bias matrix which is based on base64 for visible.
+    
+    Property
+    ---------------
+    @vertexShader: Spatial convolution in OpenGL vertex shader.
+    @fragmentShader: Spatial convolution in OpenGL fragment shader.
+    
+    Private Methods
+    ---------------
+    @__parserXXXShader: Parser XXX shader by the layer given parameters and sotre the glsl in xxxShader.
+        params: None
+        return: None
+    @__computeOutputSize: Recompute the size of Output.
+        params: None
+        return: None
+        
+    Public Methods
+    ---------------
+    @resize: Resize the parameters. and recompute the glsl.
+        params: iw, ih, ic
+            input of width, heights and channels.
+        return: None
+    @toDic: Convert Module to dict object.
+        params: None 
+        return: None. 
+    """
     __vertexShader = None
     __fragmentShader = None
     
