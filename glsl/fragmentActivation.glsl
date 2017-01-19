@@ -11,6 +11,6 @@ uniform sampler2D featureMapThis;
 void main()
 {{
 	vec4 out = texture2D(featureMapThis, textureCoordinate.xy);
-	vec4 act = clamp(step(0, out) + vec4({leaky_slope},{leaky_slope},{leaky_slope},{leaky_slope}), 0, 1);
+	vec4 activation = clamp(step(0, tmp + feature_map_out) + vec4({leaky_slope}), 0.0, 1.0);
 	gl_FragColor = out * act;
 }}

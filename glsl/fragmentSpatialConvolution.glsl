@@ -7,23 +7,22 @@ precision mediump int;
 #endif
 varying highp vec2 textureCoordinate;
 uniform sampler2D featureMapThis;
+//Every time it needs to be overwrite.
 uniform sampler2D featureMapOut;
-uniform float weights[{weights_num}];
-uniform float biases[{biases_num}];
+//weights_num is kW * kH * 4
+uniform vec4 weights[{weights_num}];
+//bias divided into n parts n for blockX * blockY
+uniform vec4 biases;
 
 void main()
 {{
-	vec4 out = texture2D(featureMapOut, textureCoordinate.xy);
-	vec4 tmp;
 	vec2 xy;
-	//textureCoordinate.x % 1/width
-	vec2 featureMapThisCorrdinate = vec2(textureCoordinate.x % (1.0 / {blockX}), textureCoordinate.y % (1.0 / {blockY}));
-	featureMapThisCorrdinate *= vec2({dW}, {dH});
-	int weights_idx = floor(textureCoordinate.x * {blockX}) + floor(textureCoordinate.y * {blockY}) * {blockX};
-{if_conditions}
-	weights_idx = weights_idx * 4;
-{loop_biases}
-	weights_idx = weights_idx * {kW} * {kH};
+	vec4 mat_mul;
+	vec4 tmp = vec4(biases);
+	vec4 feature_map_out = texture2D(featureMapOut, textureCoordinate.xy);
 {loop_weights}
-	gl_FragColor = out;
+	vec4  activation = vec4(1.0);
+//If activation activation = clamp(step(0, tmp + feature_map_out) + vec4({leaky_slope}), 0.0, 1.0);
+{activation}
+	gl_FragColor = (tmp + feature_map_out) * activation;
 }}

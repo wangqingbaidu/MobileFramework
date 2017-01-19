@@ -232,6 +232,7 @@ class Module:
             self.inputChannels = int(c) 
         except:
             print 'Error settings of width or height or channels', w, h, c
+            exit()
         
     def add(self, layer = None):
         if BaseLayer in layer.__class__.__bases__:
