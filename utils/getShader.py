@@ -40,15 +40,11 @@ def getFragmentShader(layer = None):
     
 def getSpatialConvolutionalFragmentShader(layer = None):
     assert layer
-    loop_biases_template = open(os.path.join(GLSL_PATH, 'loop_biases.glsl')).read()
+#     loop_biases_template = open(os.path.join(GLSL_PATH, 'loop_biases.glsl')).read()
     loop_weights_template = open(os.path.join(GLSL_PATH, 'loop_weights.glsl')).read()
     fragment_template = open(os.path.join(GLSL_PATH, 'fragmentSpatialConvolution.glsl')).read()
     
-    param = 'out'
-    idx = 'weights_idx'
-    loop_biases = loop_biases_template.format(param=param, idx=idx)
-    weights_params = [param + i for i in ['.r', '.g', '.b', '.a']]
-    
+    loop_weights = ''
     per_width = 1.0 / layer.inputWidth
     per_height = 1.0 / layer.inputHeight
     centerX = layer.kW / 2
@@ -58,28 +54,12 @@ def getSpatialConvolutionalFragmentShader(layer = None):
         for y in range(layer.kW):
             fThis.append([(x - centerX) * per_width, (y - centerY) * per_height])
             
-    loop_weights = ''
-    align = 0
-    
-    for p in weights_params:
-        for i in range(layer.kW * layer.kH):
-            loop_weights += loop_weights_template.format(param=p, idx=idx, align=align,
-                                                         fThisX = fThis[i][0], fThisY = fThis[i][1])
-            align += 1
+    for i in range(layer.kW * layer.kH):
+        loop_weights += loop_weights_template.format(kSize = layer.kW * layer.kH, idx = i,
+                                                     x_align = fThis[i][0], y_align = fThis[i][1])
             
-    if_conditions = open(os.path.join(GLSL_PATH, 'if_conditions.glsl')).read()
-            
-    return fragment_template.format(biases_num=layer.nOutputPlane,
-                                    weights_num=layer.nOutputPlane*layer.kH*layer.kW,
-                                    if_conditions = if_conditions if layer.if_condition else '',
-                                    loop_biases=loop_biases, 
-                                    loop_weights=loop_weights,
-                                    blockX=layer.blockX,
-                                    blockY=layer.blockY,
-                                    kW=layer.kW,
-                                    kH=layer.kH,
-                                    dW=layer.dW,
-                                    dH=layer.dH)
+    return fragment_template.format(weights_num=4*layer.kH*layer.kW,
+                                    loop_weights=loop_weights)
 
 def getActivationFragmentShader(layer = None):
     assert layer

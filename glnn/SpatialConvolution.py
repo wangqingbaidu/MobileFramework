@@ -84,15 +84,11 @@ class SpatialConvolution(BaseLayer):
         
         self.weights = weights
         self.bias = bias
-        group = nOutputPlane / 4 + (1 if nOutputPlane % 4 else 0)
+        if nOutputPlane % 4:
+            print 'nOutputPlane must be 4*n'
+            exit()
+        self.group = nOutputPlane / 4
         
-        self.blockX = int(math.sqrt(group))
-        if group % self.blockX == 0:
-            self.blockY = group / self.blockX
-            self.if_condition = False
-        else:
-            self.blockY = group / self.blockX + 1
-            self.if_condition = True
     @property
     def vertexShader(self):
         if not self.__vertexShader: 
@@ -129,12 +125,12 @@ class SpatialConvolution(BaseLayer):
     
     def toDict(self):
         attrib = obj2dict(self, ['activation', 'padding'])
-        attrib['activation'] = self.activation.toDict()
-        attrib['padding'] = self.padding.toDict()
+#         attrib['activation'] = self.activation.toDict()
+#         attrib['padding'] = self.padding.toDict()
         return attrib
     
 if __name__ == '__main__':
-    conv = SpatialConvolution(43,3,3,2,2, activation='leaky')
+    conv = SpatialConvolution(44,3,3,2,2, activation='leaky')
     conv.inputWidth = 224
     conv.inputHeight = 224
     
