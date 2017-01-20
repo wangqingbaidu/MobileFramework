@@ -7,6 +7,7 @@ Email: wangqingbaidu@gmail.com
 From Institute of Computing Technology
 ©2015-2016 All Rights Reserved.
 '''
+import struct
 
 SIZEOFFLOAT = 4
 CONFIG_PATH = '../config'
@@ -56,6 +57,8 @@ class NetworkConfig:
                  print_weights = False):
         if not os.path.exists(cfgfile):
             print 'Config file %s can not be read!' % cfgfile
+        if not os.path.exists(cfgfile):
+            print 'Weights file %s can not be read!' % weights
         
         self.cfgfile = cfgfile
         self.weights = weights
@@ -85,18 +88,42 @@ class NetworkConfig:
         if self.print_weights:
             print base64.b64encode(head)
         
+        #Network configuration starts from 1
         layer_num = 1
         total_bytes = 4 * SIZEOFFLOAT
         try:
             #loop layers
-            while layer_num < len(self.configurations.keys()):
+            for layer_num in range(1, len(self.configurations.keys())):
                 if self.configurations[layer_num]['type'].lower() in self.has_weights:
-                    bias_num = self.configurations[layer_num]['filters'] * SIZEOFFLOAT
+                    #Total number of weights in this layer.
                     former_channels = self.configurations[layer_num - 1]['channels'] \
                         if layer_num == 1 else self.configurations[layer_num - 1]['filters']
-                    weights_num = former_channels * bias_num * pow(self.configurations[layer_num]['size'], 2)
+                    this_channels = self.configurations[layer_num]['filters']
+                    bias_num = this_channels * SIZEOFFLOAT
+                    weights_num =  this_channels * pow(self.configurations[layer_num]['size'], 2) * former_channels * SIZEOFFLOAT
                     bias = f.read(bias_num)
                     weights = f.read(weights_num)
+                    #------------------------------------- Append bias & weights----------------------------#
+                    #Append float zero byte stream
+                    z = struct.pack('f', 0.0)
+                    append_num = (4 - this_channels % 4) % 4
+                    bias += z * append_num
+                    weights += z * append_num * pow(self.configurations[layer_num]['size'], 2) * former_channels
+                    
+                    #Convert to time of 4.
+                    this_channels += append_num
+                    self.configurations[layer_num]['filters'] = this_channels
+                    
+                    #------------------------------------- Get average bias ----------------------------#
+                    #Compute parts
+                    this_parts = this_channels / 4
+                    former_parts = int(round(former_channels / 4.0))
+                                          
+                    #Get float value of each bias
+                    bias_float = [v / former_parts for v in struct.unpack('f' * this_channels, bias)]
+                    bias = struct.pack('f' * this_channels, *bias_float)                                   
+                    
+                    #------------------------------------- Attaching weights ----------------------------#
                     if self.save_all_weights:
                         self.configurations[layer_num]['bias_all'] = base64.b64encode(bias)
                         self.configurations[layer_num]['weights_all'] = base64.b64encode(weights)
@@ -104,31 +131,38 @@ class NetworkConfig:
                     self.configurations[layer_num]['bias'] = {}
                     self.configurations[layer_num]['weights'] = {}
                     
-                    divide_part = former_channels / 4 + (1 if former_channels % 4 else 0)
-                    #loop vec4
-                    for l in range(divide_part):
-                        bias_from_index = bias_num / divide_part * l
-                        bias_to_index = bias_num / divide_part * (l + 1)
-                        weights_from_index = weights_num / divide_part * l
-                        weights_to_index = weights_num / divide_part * (l + 1)
-                        self.configurations[layer_num]['bias']['bias_%d' %l] = \
+                    #loop biases vec4, change bias part when featureMapOut part changes.
+                    for l in range(this_parts):
+                        #Get index of each bias part
+                        bias_from_index = bias_num / this_parts * l
+                        bias_to_index = bias_num / this_parts * (l + 1)
+                        self.configurations[layer_num]['bias'][l] = \
                             base64.b64encode(bias[bias_from_index: bias_to_index])
-                        self.configurations[layer_num]['weights']['weights_%d' %l] = \
-                            base64.b64encode(weights[weights_from_index: weights_to_index])
-                        
+                            
                         if self.print_weights:
                             print 'Bias of layer %d part %d\t-->\t' %(layer_num, l), \
-                                self.configurations[layer_num]['bias']['bias_%d' %l]
-                            print 'Weights of %d part %d\t-->\t' %(layer_num, l), \
-                                self.configurations[layer_num]['weights']['weights_%d' %l]
+                                self.configurations[layer_num]['bias'][l]
+                    
+                    #Separate weights to this_parts * former_parts, each of which will compute once.
+                    weights_num_per_parts = weights_num / this_parts / former_parts            
+                    for t in range(this_parts):
+                        self.configurations[layer_num]['weights'][t] = {}
+                        #loop weights vec4
+                        for l in range(former_parts):
+                            weights_from_index = weights_num_per_parts * (l + t * former_parts)
+                            weights_to_index = weights_num_per_parts * (l + t * former_parts + 1)
+                            self.configurations[layer_num]['weights'][t][l] = \
+                                base64.b64encode(weights[weights_from_index: weights_to_index])
+                            
+                            if self.print_weights:
+                                print 'Weights of %d part %d\t-->\t' %(layer_num, l), \
+                                    self.configurations[layer_num]['weights'][t][l]
                                 
                     total_bytes += bias_num + weights_num
-                
-                layer_num += 1
         except Exception, e:
             print e
             print 'Error while converting weights, check layer %d\n%s!' %(layer_num, self.configurations[layer_num])
-            exit()
+            raise e
         
         assert total_bytes == file_size
 
@@ -213,8 +247,6 @@ class Module:
                                                              config[l][getFrameworkAttribute('kH', framework)],
                                                              config[l][getFrameworkAttribute('dW', framework)],
                                                              config[l][getFrameworkAttribute('dH', framework)],
-                                                             config[l][getFrameworkAttribute('padW', framework)],
-                                                             config[l][getFrameworkAttribute('padH', framework)],
                                                              config[l][getFrameworkAttribute('activation', framework)],
                                                              config[l][getFrameworkAttribute('bias', framework)],
                                                              config[l][getFrameworkAttribute('weights', framework)]))

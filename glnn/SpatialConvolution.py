@@ -11,15 +11,13 @@ From Institute of Computing Technology
 from utils import getShader
 from glnn.BaseLayer import BaseLayer
 import math, json
-from glnn.Activation import Activation
-from glnn.SpatialPadding import SpatialPadding
 from utils.obj2dict import obj2dict
 
 class SpatialConvolution(BaseLayer):
     """
     Typically each Spatialconvolution layer contains padding, convolution, activation.
-    This class firstly use padding parameters to padding X pixels, then do feature extraction and finally activate the output feature map.
-    SpatialConvolution layer follow torch7 parameter settings which applies a 2D convolution over an input image composed of several input planes. 
+    Padding size is ignored, padding model same will be used.
+    SpatialConvolution layer follow torch7 parameter settings which applies a 2D convolution over an input image. 
     The input tensor in forward(input) is expected to be a 3D tensor (nInputPlane x height x width).
 
     Parameters
@@ -29,8 +27,6 @@ class SpatialConvolution(BaseLayer):
     @kH: The kernel height of the convolution
     @dW: The step of the convolution in the width dimension. Default is 1.
     @dH: The step of the convolution in the height dimension. Default is 1.
-    @padW: Additional zeros added to the input plane data on both sides of width axis. Default is 0. (kW-1)/2 is often used here.
-    @padH: Additional zeros added to the input plane data on both sides of height axis. Default is 0. (kH-1)/2 is often used here.
     @weights: Weights matrix which is based on base64 for visible.
     @bias: Bias matrix which is based on base64 for visible.
     
@@ -67,8 +63,6 @@ class SpatialConvolution(BaseLayer):
                  kH,
                  dW = 1,
                  dH = 1,
-                 padW = None,
-                 padH = None,
                  activation = None,
                  bias = None,
                  weights = None):
@@ -77,17 +71,17 @@ class SpatialConvolution(BaseLayer):
         self.kH = kH
         self.dW = dW
         self.dH = dH
-        self.padW = padW if padW != None else (kW - 1) / 2
-        self.padH = padH if padH != None else (kH - 1) / 2
-        self.activation = Activation(activation)
-        self.padding = SpatialPadding(self.padW, self.padH)
+        assert activation.lower() in ['relu', 'leaky']
+        get_activation = lambda t: "activation = clamp(step(0, tmp + feature_map_out), 0.0, 1.0);" if t == 'relu' else \
+            "activation = clamp(step(0, tmp + feature_map_out) + vec4(0.0001), 0.0, 1.0);" 
+        self.activation = get_activation(activation.lower())
         
         self.weights = weights
         self.bias = bias
         if nOutputPlane % 4:
             print 'nOutputPlane must be 4*n'
             exit()
-        self.group = nOutputPlane / 4
+        self.parts = nOutputPlane / 4
         
     @property
     def vertexShader(self):
@@ -102,13 +96,10 @@ class SpatialConvolution(BaseLayer):
         return self.__fragmentShader
     
     def resize(self, iw, ih, ic):
-        self.padding.resize(iw, ih, ic)
-        self.inputWidth = self.padding.outputWidth
-        self.inputHeight = self.padding.outputHeight
-        self.nInputPlane = self.padding.nOutputPlane
+        self.inputWidth = iw
+        self.inputHeight = ih
+        self.nInputPlane = ic
         self.__computeOutputSize()
-        
-        self.activation.resize(self.outputWidth, self.outputHeight, self.nOutputPlane)
         self.__parserVertexShader()
         self.__parserFragmentShader()
         
@@ -120,13 +111,11 @@ class SpatialConvolution(BaseLayer):
         
     def __computeOutputSize(self):
         if self.inputWidth and self.inputHeight:
-            self.outputWidth = (self.inputWidth + 2 * self.padW - self.kW) / self.dW + 1
-            self.outputHeight = (self.inputHeight + 2 * self.padH - self.kH) / self.dH + 1
+            self.outputWidth = (self.inputWidth - 1) / self.dW + 1
+            self.outputHeight = (self.inputHeight - 1) / self.dH + 1
     
     def toDict(self):
-        attrib = obj2dict(self, ['activation', 'padding'])
-#         attrib['activation'] = self.activation.toDict()
-#         attrib['padding'] = self.padding.toDict()
+        attrib = obj2dict(self, [])
         return attrib
     
 if __name__ == '__main__':

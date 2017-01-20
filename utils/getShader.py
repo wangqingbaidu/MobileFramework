@@ -31,12 +31,12 @@ def getFragmentShader(layer = None):
     assert layer
     if 'SpatialConvolution' in str(layer.__class__):
         return getSpatialConvolutionalFragmentShader(layer)
-    elif 'Activation' in str(layer.__class__):
-        return getActivationFragmentShader(layer)
-    elif 'SpatialAveragePooling' in str(layer.__class__):
-        return getSpatialAveragePoolingFragmentShader(layer)
-    elif 'SpatialPadding' in str(layer.__class__):
-        return getSpatialPaddingFragmentShader(layer)
+#     elif 'Activation' in str(layer.__class__):
+#         return getActivationFragmentShader(layer)
+#     elif 'SpatialAveragePooling' in str(layer.__class__):
+#         return getSpatialAveragePoolingFragmentShader(layer)
+#     elif 'SpatialPadding' in str(layer.__class__):
+#         return getSpatialPaddingFragmentShader(layer)
     
 def getSpatialConvolutionalFragmentShader(layer = None):
     assert layer
@@ -61,20 +61,20 @@ def getSpatialConvolutionalFragmentShader(layer = None):
     return fragment_template.format(weights_num=4*layer.kH*layer.kW,
                                     loop_weights=loop_weights)
 
-def getActivationFragmentShader(layer = None):
-    assert layer
-    leaky_slope = 0
-    if layer.activation == 'leaky':
-        leaky_slope = 0.1
-    
-    return open(os.path.join(GLSL_PATH, 'fragmentActivation.glsl')).read().format(leaky_slope=leaky_slope)
+# def getActivationFragmentShader(layer = None):
+#     assert layer
+#     leaky_slope = 0
+#     if layer.activation == 'leaky':
+#         leaky_slope = 0.1
+#     
+#     return open(os.path.join(GLSL_PATH, 'fragmentActivation.glsl')).read().format(leaky_slope=leaky_slope)
 
 def getSpatialAveragePoolingFragmentShader(layer = None):
     assert layer
 
-def getSpatialPaddingFragmentShader(layer=None):
-    assert layer
-    return open(os.path.join(GLSL_PATH, 'fragmentSpatialPadding.glsl')).read()    
+# def getSpatialPaddingFragmentShader(layer=None):
+#     assert layer
+#     return open(os.path.join(GLSL_PATH, 'fragmentSpatialPadding.glsl')).read()    
 
 if __name__ == '__main__':
     print getVertexShader()

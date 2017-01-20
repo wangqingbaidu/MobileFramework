@@ -11,7 +11,7 @@ uniform sampler2D featureMapThis;
 uniform sampler2D featureMapOut;
 //weights_num is kW * kH * 4
 uniform vec4 weights[{weights_num}];
-//bias divided into n parts, n for blockX * blockY
+//bias divided into n parts
 uniform vec4 biases;
 
 float sum_weight(vec4 c) {{
@@ -27,7 +27,7 @@ void main()
 	vec4 feature_map_out = texture2D(featureMapOut, textureCoordinate.xy);
 {loop_weights}
 	vec4  activation = vec4(1.0);
-//If activation activation = clamp(step(0, tmp + feature_map_out) + vec4({{leaky_slope}}), 0.0, 1.0);
-%s
+	//If activation activation = clamp(step(0, tmp + feature_map_out) + vec4(`leaky_slope`), 0.0, 1.0);
+	%s
 	gl_FragColor = (tmp + feature_map_out) * activation;
 }}
