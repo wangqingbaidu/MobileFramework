@@ -78,10 +78,10 @@ class SpatialConvolution(BaseLayer):
         
         self.weights = weights
         self.bias = bias
-        if nOutputPlane % 4:
-            print 'nOutputPlane must be 4*n'
-            exit()
-        self.parts = nOutputPlane / 4
+#         if nOutputPlane % 4:
+#             print 'nOutputPlane must be 4*n'
+#             exit()
+        self.parts = nOutputPlane / 4 + (1 if nOutputPlane % 4 else 0)
         
     @property
     def vertexShader(self):
