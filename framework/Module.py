@@ -107,15 +107,11 @@ class NetworkConfig:
                     #Append float zero byte stream
                     z = struct.pack('f', 0.0)
                     append_num = (4 - this_channels % 4) % 4
-                    print len(bias), len(weights)
                     bias += z * append_num
                     weights += z * append_num * pow(self.configurations[layer_num]['size'], 2) * former_channels
                     
-                    print len(bias), len(weights)
-                    
                     #Convert to times of 4.
                     this_channels += append_num
-                    bias_num = this_channels * SIZEOFFLOAT
 #                     self.configurations[layer_num]['filters'] = this_channels
                     
                     #------------------------------------- Get average bias ----------------------------#
@@ -127,6 +123,10 @@ class NetworkConfig:
                     bias_float = [v / former_parts for v in struct.unpack('f' * this_channels, bias)]
                     bias = struct.pack('f' * this_channels, *bias_float)
                     
+                    if self.print_weights:                        
+                        print struct.unpack('f' * this_channels, bias)
+                        print struct.unpack('f' * (this_channels * pow(self.configurations[layer_num]['size'], 2) * former_channels), weights)
+                        
                     #------------------------------------- Attaching weights ----------------------------#
                     if self.save_all_weights:
                         self.configurations[layer_num]['bias_all'] = base64.b64encode(bias)
@@ -138,8 +138,8 @@ class NetworkConfig:
                     #loop biases vec4, change bias part when featureMapOut part changes.
                     for t in range(this_parts):
                         #Get index of each bias part
-                        bias_from_index = bias_num / this_parts * t
-                        bias_to_index = bias_num / this_parts * (t + 1)
+                        bias_from_index = this_channels * SIZEOFFLOAT / this_parts * t
+                        bias_to_index = this_channels * SIZEOFFLOAT / this_parts * (t + 1)
                         self.configurations[layer_num]['bias'][t] = \
                             base64.b64encode(bias[bias_from_index: bias_to_index])
                         #Initial weights of each part
@@ -169,19 +169,19 @@ class NetworkConfig:
                         
                     #Print weights if needed.
                     if self.print_weights:
-                        for t in range(this_parts):
-                            for f in range(former_parts):
-                                print 'Weights of %d this part %d former part %d\t-->\t' %(layer_num, t ,f), \
-                                    self.configurations[layer_num]['weights'][t][f]
+                        for tp in range(this_parts):
+                            for fp in range(former_parts):
+                                print 'Weights of %d this part %d former part %d\t-->\t' %(layer_num, t ,fp), \
+                                    self.configurations[layer_num]['weights'][tp][fp]
                             
-                            print 'Bias of layer %d this part %d\t-->\t' %(layer_num, t), \
-                                self.configurations[layer_num]['bias'][t]
+                            print 'Bias of layer %d this part %d\t-->\t' %(layer_num, tp), \
+                                self.configurations[layer_num]['bias'][tp]
                                 
                     total_bytes += bias_num + weights_num
         except Exception, e:
             print e
             print 'Error while converting weights, check layer %d\n%s!' %(layer_num, self.configurations[layer_num])
-            raise e
+            exit()
         
         assert total_bytes == file_size
 
@@ -268,7 +268,8 @@ class Module:
                                                              config[l][getFrameworkAttribute('dH', framework)],
                                                              config[l][getFrameworkAttribute('activation', framework)],
                                                              config[l][getFrameworkAttribute('bias', framework)],
-                                                             config[l][getFrameworkAttribute('weights', framework)]))
+                                                             config[l][getFrameworkAttribute('weights', framework)],
+                                                             first = True if l == 1 else False))
                 l += 1
         except Exception,e:
             print e

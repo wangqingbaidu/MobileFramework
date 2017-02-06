@@ -29,6 +29,7 @@ class SpatialConvolution(BaseLayer):
     @dH: The step of the convolution in the height dimension. Default is 1.
     @weights: Weights matrix which is based on base64 for visible.
     @bias: Bias matrix which is based on base64 for visible.
+    @first: First layer of this model. Default is False. If Ture, this layer can't be decoded.
     
     Property
     ---------------
@@ -65,15 +66,18 @@ class SpatialConvolution(BaseLayer):
                  dH = 1,
                  activation = None,
                  bias = None,
-                 weights = None):
+                 weights = None,
+                 first = False):
         BaseLayer.__init__(self, nOutputPlane)
         self.kW = kW
         self.kH = kH
         self.dW = dW
         self.dH = dH
+        self.first = first
         assert activation.lower() in ['relu', 'leaky']
-        get_activation = lambda t: "activation = clamp(step(0, tmp + feature_map_out), 0.0, 1.0);" if t == 'relu' else \
-            "activation = clamp(step(0, tmp + feature_map_out) + vec4(0.0001), 0.0, 1.0);" 
+        self.leaky_slope = 0.0 if activation.lower() == 'relu' else 0.0001
+        get_activation = lambda t: "activation = clamp(step(0.0, tmp + feature_map_out), 0.0, 1.0);" if t == 'relu' else \
+            "activation = clamp(step(0.0, tmp + feature_map_out) + vec4(0.0001), 0.0, 1.0);" 
         self.activation = get_activation(activation.lower())
         
         self.weights = weights

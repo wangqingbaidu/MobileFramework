@@ -56,10 +56,13 @@ def getSpatialConvolutionalFragmentShader(layer = None):
             
     for i in range(layer.kW * layer.kH):
         loop_weights += loop_weights_template.format(kSize = layer.kW * layer.kH, idx = i,
-                                                     x_align = fThis[i][0], y_align = fThis[i][1])
+                                                     x_align = fThis[i][0], y_align = fThis[i][1],
+                                                     color_this = 'color_this = texture2D(featureMapThis, xy);' 
+                                                        if layer.first else 'color_this = df(texture2D(featureMapThis, xy));')
             
     return fragment_template.format(weights_num=4*layer.kH*layer.kW,
-                                    loop_weights=loop_weights)
+                                    loop_weights=loop_weights,
+                                    leaky_slope=layer.leaky_slope)
 
 # def getActivationFragmentShader(layer = None):
 #     assert layer

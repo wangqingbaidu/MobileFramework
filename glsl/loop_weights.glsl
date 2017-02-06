@@ -1,6 +1,6 @@
 	//Clamp act as padding.
 	xy = clamp(textureCoordinate + vec2({x_align}, {y_align}), 0.0, 1.0);
-	color_this = texture2D(featureMapThis, xy);
+	{color_this}
 	mat_mul = weights[{kSize} * 0 + {idx}] * color_this;
 	tmp.r += sum_weight(mat_mul);
 	mat_mul = weights[{kSize} * 1 + {idx}] * color_this;
