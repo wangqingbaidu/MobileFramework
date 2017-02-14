@@ -83,7 +83,7 @@ class NetworkConfig:
                 
     def __attach_biases_weights(self):
         file_size = os.path.getsize(self.weights)
-        f = open(self.weights)
+        f = open(self.weights, 'rb')
         head = f.read(4 * SIZEOFFLOAT)
         if self.print_weights:
             print base64.b64encode(head)
